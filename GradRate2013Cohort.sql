@@ -1,7 +1,5 @@
---Grad Rate 19-20 (Fall 2013)
-
---I need to have Identifiers, name, gender, Ethnicity, birthdate, degree intent
-
+--This query pulls all the data needed for the IPEDS graduation report. The report year is 19-20, the cohort
+--year is 2013-2014
     SELECT  a.sgbuser_pidm,
             c.spriden_id,
             c.spriden_first_name,
@@ -9,8 +7,11 @@
             SUBSTR(c.spriden_mi,0,1),
             b.spbpers_name_suffix,
             b.spbpers_sex,
+            --We have to pull race code from two different tables. We will have to do this untill ???
+            --gorprac is where the older race codes are contained and spbpers_ethn_code is where the 
+            --newer codes are contained. 
             COALESCE(b.spbpers_ethn_code, d.race_cde, '') AS ethnicity,
-            -- s_deg_intent, 
+            -- s_deg_intent, DELETE??
             b.spbpers_birth_date,
             a.sgbuser_sudc_code,
             e.athletic_ind,
@@ -21,6 +22,10 @@
          ON a.sgbuser_pidm = b.spbpers_pidm
  INNER JOIN spriden c
          ON a.sgbuser_pidm = c.spriden_pidm
+         --This subquery pulls out the ethnicity code. The select statement prior to the union pulls
+         --in the race code for all the students who do not have more than one race code in gorprac.
+         --The select statement after the union pulls in all the students who have more than one race
+         --code in gorprac.
   LEFT JOIN (SELECT dd.gorprac_pidm,
                     dd.gorprac_race_cde AS race_cde
                FROM gorprac dd
@@ -42,7 +47,7 @@
                FROM sgrsprt ee
               WHERE ee.sgrsprt_spst_code = 'AC') e
          ON a.sgbuser_pidm = e.sgrsprt_pidm
-        AND e.sgrsprt_term_code BETWEEN a.sgbuser_term_code AND a.sgbuser_term_code+80
+        AND e.sgrsprt_term_code BETWEEN a.sgbuser_term_code AND a.sgbuser_term_code+80 --pulls in fall and spring
   LEFT JOIN (SELECT DISTINCT ff.sfrstcr_pidm,
                              ff.sfrstcr_term_code,
                              'Y' AS enroll_ind
@@ -55,6 +60,7 @@
   LEFT JOIN (SELECT gg.shrdgmr_pidm,
                     gg.shrdgmr_degc_code
                FROM shrdgmr gg
+              --This selects the last degree that was awarded to the student
               WHERE gg.shrdgmr_seq_no = (SELECT MAX(ggg.shrdgmr_seq_no)
                                            FROM shrdgmr ggg
                                           WHERE gg.shrdgmr_pidm = ggg.shrdgmr_pidm)) g
@@ -62,8 +68,8 @@
       WHERE c.spriden_change_ind IS NULL
         AND a.sgbuser_term_code = '201340'
         AND (a.sgbuser_sudc_code IN ('FF','FH')
-    --  AND s_deg_intent IN ('4', '2')
-    --  AND s_pt_ft = 'F'
+    --  AND s_deg_intent IN ('4', '2') DELETE ??
+    --  AND s_pt_ft = 'F'  DELETE ??
             OR (a.sgbuser_sudc_code = 'CS'
                 AND a.sgbuser_pidm IN (SELECT aa.sgbuser_pidm 
                                          FROM sgbuser aa
@@ -79,10 +85,10 @@
 --heirarchy of degrees like B, A, C
 
 --Missing Exclusion Data (the exclusions table has not been updated with the latest data)
-select *
-from enroll.exclusions
-@dscir.dixie.edu
-where ex_eff_term >= '201340'
+--select *
+--from enroll.exclusions
+--@dscir.dixie.edu
+--where ex_eff_term >= '201340'
 
 
 --Missing Fin Aid Data (entering year) Pell Grant Recipient; Direct Subsidized Loan Recipient (no pell grant)
