@@ -14,14 +14,7 @@ WITH enrolled_students AS (
            g.stvterm_desc,
            f.sgbstdn_levl_code   AS levl_code,
            h.stvlevl_desc,
-           CASE f.sgbstdn_coll_code_1
-                WHEN 'CT' THEN 'SC' -- Computer Info Tech into Sci, Engr, & Tech
-                WHEN 'EF' THEN 'ED' -- Ed/Fam Sci/PE into College of Ed
-                WHEN 'HI' THEN 'HS' -- Hist/Poli Sci into College of Humanities
-                WHEN 'MA' THEN 'SC' -- Math into Sci, Engr, & Tech
-                WHEN 'TE' THEN 'SC' -- Technologies into Sci, Engr, & Tech
-                ELSE f.sgbstdn_coll_code_1
-                END AS coll_code,
+           f.sgbstdn_coll_code_1,
            j.stvcoll_desc,
            f.sgbstdn_degc_code_1 AS degc_code,
            k.stvdegc_desc,
@@ -31,7 +24,14 @@ WITH enrolled_students AS (
      FROM (
               SELECT b.sfrstcr_term_code,
                      a.sgbstdn_levl_code,
-                     a.sgbstdn_coll_code_1,
+                     CASE a.sgbstdn_coll_code_1
+                          WHEN 'CT' THEN 'SC' -- Computer Info Tech into Sci, Engr, & Tech
+                          WHEN 'EF' THEN 'ED' -- Ed/Fam Sci/PE into College of Ed
+                          WHEN 'HI' THEN 'HS' -- Hist/Poli Sci into College of Humanities
+                          WHEN 'MA' THEN 'SC' -- Math into Sci, Engr, & Tech
+                          WHEN 'TE' THEN 'SC' -- Technologies into Sci, Engr, & Tech
+                          ELSE a.sgbstdn_coll_code_1
+                          END AS sgbstdn_coll_code_1,
                      a.sgbstdn_degc_code_1,
                      a.sgbstdn_majr_code_1,
                      a.sgbstdn_pidm
@@ -50,7 +50,14 @@ WITH enrolled_students AS (
 
               SELECT d.sfrstcr_term_code,
                      b.sgbstdn_levl_code,
-                     b.sgbstdn_coll_code_2,
+                     CASE b.sgbstdn_coll_code_2
+                          WHEN 'CT' THEN 'SC' -- Computer Info Tech into Sci, Engr, & Tech
+                          WHEN 'EF' THEN 'ED' -- Ed/Fam Sci/PE into College of Ed
+                          WHEN 'HI' THEN 'HS' -- Hist/Poli Sci into College of Humanities
+                          WHEN 'MA' THEN 'SC' -- Math into Sci, Engr, & Tech
+                          WHEN 'TE' THEN 'SC' -- Technologies into Sci, Engr, & Tech
+                          ELSE b.sgbstdn_coll_code_2
+                          END AS sgbstdn_coll_code_2,
                      b.sgbstdn_degc_code_2,
                      b.sgbstdn_majr_code_2,
                      b.sgbstdn_pidm
