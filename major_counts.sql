@@ -50,7 +50,8 @@ WITH enrolled_students AS (
                 FROM sgbstdn b
           INNER JOIN enrolled_students d
                   ON b.sgbstdn_pidm = d.sfrstcr_pidm
-               WHERE b.sgbstdn_stst_code = 'AS'
+               WHERE b.sgbstdn_majr_code_2 IS NOT NULL
+                 AND b.sgbstdn_stst_code = 'AS'
                  AND SUBSTR(d.sfrstcr_term_code, 1, 4) BETWEEN '2014' AND '2019'
                  AND SUBSTR(d.sfrstcr_term_code, 5, 2) = '40'
                  AND b.sgbstdn_term_code_eff = (SELECT MAX(bb.sgbstdn_term_code_eff)
