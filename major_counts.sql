@@ -14,7 +14,14 @@ WITH enrolled_students AS (
            g.stvterm_desc,
            f.sgbstdn_levl_code   AS levl_code,
            h.stvlevl_desc,
-           f.sgbstdn_coll_code_1 AS coll_code,
+           CASE f.sgbstdn_coll_code_1
+                WHEN 'CT' THEN 'SC' -- Computer Info Tech into Sci, Engr, & Tech
+                WHEN 'EF' THEN 'ED' -- Ed/Fam Sci/PE into College of Ed
+                WHEN 'HI' THEN 'HS' -- Hist/Poli Sci into College of Humanities
+                WHEN 'MA' THEN 'SC' -- Math into Sci, Engr, & Tech
+                WHEN 'TE' THEN 'SC' -- Technologies into Sci, Engr, & Tech
+                ELSE f.sgbstdn_coll_code_1
+                END AS coll_code,
            j.stvcoll_desc,
            f.sgbstdn_degc_code_1 AS degc_code,
            k.stvdegc_desc,
