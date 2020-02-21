@@ -30,6 +30,7 @@ WITH enrolled_students AS (
                           WHEN 'HI' THEN 'HS' -- Hist/Poli Sci into College of Humanities
                           WHEN 'MA' THEN 'SC' -- Math into Sci, Engr, & Tech
                           WHEN 'TE' THEN 'SC' -- Technologies into Sci, Engr, & Tech
+                          WHEN 'NS' THEN 'SC' -- Natural Sci into Sci, Engr, & Tech
                           ELSE a.sgbstdn_coll_code_1
                           END AS sgbstdn_coll_code_1,
                      a.sgbstdn_degc_code_1,
@@ -56,6 +57,7 @@ WITH enrolled_students AS (
                           WHEN 'HI' THEN 'HS' -- Hist/Poli Sci into College of Humanities
                           WHEN 'MA' THEN 'SC' -- Math into Sci, Engr, & Tech
                           WHEN 'TE' THEN 'SC' -- Technologies into Sci, Engr, & Tech
+                          WHEN 'NS' THEN 'SC' -- Natural Sci into Sci, Engr, & Tech
                           ELSE b.sgbstdn_coll_code_2
                           END AS sgbstdn_coll_code_2,
                      b.sgbstdn_degc_code_2,
