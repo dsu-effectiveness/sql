@@ -29,15 +29,21 @@ INNER JOIN stvrsts d
  LEFT JOIN pebempl g
         ON f.sirasgn_pidm = g.pebempl_pidm
      WHERE a.ssbsect_ssts_code = 'A'
-       AND a.ssbsect_term_code = '201940'
        AND a.ssbsect_enrl > 0
        AND d.stvrsts_incl_sect_enrl = 'Y'
        AND f.sirasgn_primary_ind = 'Y'
        -- Erin's list of courses; these could be removed to generalize.
+       -- Erin also asked for fall 2019, but wants most recent time
+       -- taught if course not taught in fall term.
        AND CONCAT(a.ssbsect_subj_code, a.ssbsect_crse_numb) IN (
              'ECON1740','HIST1700','HIST2700','HIST2710','POLS1100',
              'MATH1030','MATH1040','MATH1050','MATH1060','MATH1080',
              'MATH1100','MATH1210','MATH1220','MATH2210')
+       AND a.ssbsect_term_code = (SELECT MAX(aa.ssbsect_term_code)
+                                    FROM ssbsect aa
+                                   WHERE aa.ssbsect_term_code <= 201940
+                                     AND a.ssbsect_subj_code = aa.ssbsect_subj_code
+                                     AND a.ssbsect_crse_numb = aa.ssbsect_crse_numb)
   GROUP BY b.stvterm_desc,
            a.ssbsect_crn,
            a.ssbsect_subj_code,
