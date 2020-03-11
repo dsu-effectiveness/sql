@@ -1,3 +1,4 @@
+
 SELECT b.stvterm_desc,
        a.ssbsect_term_code,
        a.ssbsect_crn,
@@ -5,7 +6,7 @@ SELECT b.stvterm_desc,
        a.ssbsect_crse_numb,
        a.ssbsect_seq_numb,
        h.ssrattr_attr_code,
-       i.stvattr_code,
+       i.stvattr_desc,
        e.gtvinsm_desc,
            CASE WHEN g.pebempl_ecls_code IN ('F2','F9') THEN 'FT'
                 ELSE 'PT'
@@ -24,10 +25,11 @@ INNER JOIN stvterm b
        AND a.ssbsect_crn = c.sfrstcr_crn
 INNER JOIN stvrsts d
         ON c.sfrstcr_rsts_code = d.stvrsts_code
- LEFT JOIN stvattr i
-        ON h.ssrattr_attr_code = i.stvattr_code
  LEFT JOIN ssrattr h
         ON a.ssbsect_term_code = h.ssrattr_term_code
+       AND a.ssbsect_crn = h.ssrattr_crn
+ LEFT JOIN stvattr i
+        ON h.ssrattr_attr_code = i.stvattr_code
  LEFT JOIN gtvinsm e
         ON a.ssbsect_insm_code = e.gtvinsm_code
  LEFT JOIN sirasgn f
@@ -45,12 +47,14 @@ INNER JOIN stvrsts d
                                      AND a.ssbsect_subj_code = aa.ssbsect_subj_code
                                      AND a.ssbsect_crse_numb = aa.ssbsect_crse_numb)
   GROUP BY b.stvterm_desc,
-           a.ssbsect_crn,
-           a.ssbsect_subj_code,
-           a.ssbsect_crse_numb,
-           a.ssbsect_seq_numb,
-           f.sirasgn_pidm,
-           e.gtvinsm_desc,
+       a.ssbsect_term_code,
+       a.ssbsect_crn,
+       a.ssbsect_subj_code,
+       a.ssbsect_crse_numb,
+       a.ssbsect_seq_numb,
+       h.ssrattr_attr_code,
+       i.stvattr_desc,
+       e.gtvinsm_desc,
            CASE WHEN g.pebempl_ecls_code IN ('F2','F9') THEN 'FT'
                 ELSE 'PT'
                 END;
