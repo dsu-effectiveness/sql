@@ -1,6 +1,3 @@
-
-
-Joy Baule  9:27 AM
 SELECT DISTINCT a.sfrstcr_term_code AS Start_Term,
                a.sfrstcr_term_code + 80 AS Return_term,
                a.sfrstcr_pidm,
@@ -64,3 +61,10 @@ SELECT DISTINCT a.sfrstcr_term_code AS Start_Term,
                  (SELECT b.stvrsts_code
                     FROM stvrsts b
                    WHERE b.stvrsts_incl_sect_enrl = 'Y')
+           AND f.sgbstdn_term_code_eff = (SELECT MAX(ff.sgbstdn_term_code_eff)
+                                            FROM sgbstdn ff
+                                           WHERE f.sgbstdn_pidm = ff.sgbstdn_pidm
+                                             AND ff.sgbstdn_term_code_eff <= (SELECT MIN(aa.sfrstcr_term_code)
+                                                                                FROM sfrstcr aa
+                                                                               WHERE a.sfrstcr_pidm = aa.sfrstcr_pidm
+                                                                                 AND aa.sfrstcr_term_code >= a.sfrstcr_term_code) )
