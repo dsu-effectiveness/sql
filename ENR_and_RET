@@ -1,0 +1,81 @@
+SELECT DISTINCT a.sfrstcr_term_code AS Enr_Start_Term,
+          a.sfrstcr_term_code + 100 AS Return_term,
+          a.sfrstcr_pidm,
+          CASE WHEN b.sfrstcr_pidm IS NOT NULL THEN 'Y'
+               ELSE 'N'
+               END AS retention_ind,
+          d.spbpers_sex AS Gender,
+          f.sgbstdn_levl_code,
+          f.sgbstdn_styp_code,
+                CASE f.sgbstdn_coll_code_1
+                          WHEN 'NS' THEN 'SC' -- Natural Sci into Sci, Engr, & Tech
+                          WHEN 'CT' THEN 'SC' -- Computer Info Tech into Sci, Engr, & Tech
+                          WHEN 'EF' THEN 'ED' -- Ed/Fam Sci/PE into College of Ed
+                          WHEN 'HI' THEN 'HS' -- Hist/Poli Sci into College of Humanities
+                          WHEN 'MA' THEN 'SC' -- Math into Sci, Engr, & Tech
+                          WHEN 'TE' THEN 'SC' -- Technologies into Sci, Engr, & Tech
+                          ELSE f.sgbstdn_coll_code_1
+                          END AS sgbstdn_coll_code_1,
+          h.stvcoll_desc,
+          f.sgbstdn_program_1 AS sgbstdn_program,
+          f.sgbstdn_pidm,
+               CASE WHEN f.sgbstdn_pidm IS NOT NULL THEN 'Y'
+               ELSE 'N'
+               END AS fterm_ind,
+          g.stvresd_in_state_ind,
+          x.spriden_id,
+          -- Race/Ethnicity Notes: Ethnicity follows a hierarchy that prioritizes different situations and different sources.
+          -- Non-Resident Alien ('N') overwrites all other ethnicities. Hispanic ('H')takes precedence over other ethnicities
+          -- when multiple races ('2') are found, however all other instances of multiple races ('2') are marked as such. The
+          -- remainder of students will have their race looked up in the new source (GORPRAC) then the old source (SPBPERS).
+          CASE WHEN d.spbpers_citz_code = '2' THEN 'Nonresident alien'
+               WHEN d.spbpers_ethn_cde = '2' THEN 'Hispanic'
+               WHEN j.race_cdes LIKE '%H%' THEN 'Hispanic'
+               WHEN j.race_cdes LIKE '%|%' THEN 'Two or more races'
+               WHEN j.race_cdes IS NOT NULL THEN k.gorrace_desc
+               ELSE 'Unknown'
+               END AS race_desc
+     FROM sfrstcr a
+LEFT JOIN (SELECT DISTINCT bb.sfrstcr_term_code,
+                  bb.sfrstcr_pidm
+             FROM sfrstcr bb
+            WHERE bb.sfrstcr_camp_code <> 'XXX'
+              AND bb.sfrstcr_term_code IN ('201640', '201740','201840', '201940' , '202040') --This is the Return Term --This is the Return Term
+              AND bb.sfrstcr_levl_code = 'UG'
+              AND bb.sfrstcr_rsts_code IN
+                   (SELECT bbb.stvrsts_code
+                      FROM stvrsts bbb
+                     WHERE bbb.stvrsts_incl_sect_enrl = 'Y')) b
+               ON a.sfrstcr_pidm = b.sfrstcr_pidm
+               AND a.sfrstcr_term_code = b.sfrstcr_term_code - 100 --Gap number is the number subtracted
+        LEFT JOIN spbpers d
+               ON a.sfrstcr_pidm = d.spbpers_pidm
+        LEFT JOIN sgbstdn f
+               ON a.sfrstcr_pidm = f.SGBSTDN_PIDM
+              AND f.sgbstdn_stst_code = 'AS' --Active Students
+        LEFT JOIN spriden x
+               ON f.sgbstdn_pidm = x.spriden_pidm
+              AND x.spriden_change_ind IS NULL
+        LEFT JOIN stvresd g
+               ON f.sgbstdn_resd_code = g.stvresd_code
+        LEFT JOIN stvcoll h
+               ON f.sgbstdn_coll_code_1 = h.stvcoll_desc
+        LEFT JOIN (SELECT jj.gorprac_pidm,
+                          LISTAGG(jj.gorprac_race_cde, '|') AS race_cdes
+                     FROM gorprac jj
+                 GROUP BY jj.gorprac_pidm) j
+               ON a.sfrstcr_pidm = j.gorprac_pidm
+        LEFT JOIN gorrace k
+               ON j.race_cdes = k.gorrace_race_cde
+            WHERE a.sfrstcr_camp_code <> 'XXX'
+              AND a.sfrstcr_term_code IN ('201640', '201740', '201840', '201940', '202040') --This is the Start Term
+              AND a.sfrstcr_levl_code = 'UG'
+              AND a.sfrstcr_rsts_code IN
+                   (SELECT b.stvrsts_code
+                      FROM stvrsts b
+                     WHERE b.stvrsts_incl_sect_enrl = 'Y')
+              AND f.sgbstdn_term_code_eff =
+                   (SELECT MAX(ff.sgbstdn_term_code_eff)
+                      FROM sgbstdn ff
+                     WHERE f.sgbstdn_pidm = ff.sgbstdn_pidm
+                       AND ff.sgbstdn_term_code_eff <= a.sfrstcr_term_code) ;
