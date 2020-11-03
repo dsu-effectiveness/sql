@@ -1,0 +1,45 @@
+SELECT b.shrdgmr_pidm,
+         b.shrdgmr_degc_code,
+         b.shrdgmr_majr_code_1,
+         b.shrdgmr_term_code_grad,
+         b.shrdgmr_grad_date,
+         h.stvterm_desc,
+         h.stvterm_acyr_code,
+         c.stvcoll_code,
+         CASE c.stvcoll_desc
+              WHEN 'Mathematics' THEN 'Sci, Engr & Tech'
+              WHEN '* Natural Sciences' THEN 'Sci, Engr & Tech'
+              WHEN '*Education/Family Studies/PE' THEN 'Education'
+              WHEN 'Humanities & Social Sciences' THEN 'Humanities/Soc Sci'
+              WHEN 'History/Political Science' THEN 'Humanities/Soc Sci'
+              WHEN 'Computer Information Tech' THEN 'Sci, Engr & Tech'
+              WHEN 'Technologies' THEN 'Sci, Engr & Tech'
+              WHEN 'Nursing' THEN 'Health Sciences'
+              WHEN 'College of Health Sciences' THEN 'Health Sciences'
+              WHEN 'College of Business' THEN 'Business'
+              WHEN 'College of Education' THEN 'Education'
+              WHEN 'College of the Arts' THEN 'Arts'
+              WHEN 'Coll of Sci, Engr & Tech' THEN 'Sci, Engr & Tech'
+              WHEN 'Coll of Humanities/Soc Sci' THEN 'Humanities/Soc Sci'
+              ELSE c.stvcoll_desc
+              END AS stvcoll_desc,
+          d.stvmajr_desc,
+         COALESCE( dsc.f_get_race_ethn(f.spriden_pidm),
+                   dsc.f_get_race_ethn(f.spriden_pidm,1),
+                   'Unknown' ) AS race_ethn,
+          g.spbpers_sex,
+          dsc.f_is_1st_gen(f.spriden_pidm) AS first_gen_status
+     FROM shrdgmr b
+LEFT JOIN stvcoll c
+       ON b.shrdgmr_coll_code_1 = c.stvcoll_code
+LEFT JOIN stvmajr d
+       ON b.shrdgmr_majr_code_1 = d.stvmajr_code
+LEFT JOIN spriden f
+       ON f.spriden_pidm = b.shrdgmr_pidm
+      AND f.spriden_change_ind IS NULL
+LEFT JOIN spbpers g
+       ON g.spbpers_pidm = f.spriden_pidm
+LEFT JOIN stvterm h
+       ON b.shrdgmr_term_code_grad = h.stvterm_code
+    WHERE b.shrdgmr_degs_code = 'AW'
+      AND b.shrdgmr_levl_code = 'UG';
